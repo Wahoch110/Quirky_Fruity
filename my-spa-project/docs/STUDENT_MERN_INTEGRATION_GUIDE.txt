@@ -1,0 +1,245 @@
+================================================================================
+GUIDE — Connecting React (Frontend) + Express (Backend) + MongoDB
+================================================================================
+Course: Web Engineering | Project: Quirky Fruity SPA
+
+--------------------------------------------------------------------------------
+PART 1 — WHAT WE DID?
+--------------------------------------------------------------------------------
+
+We stopped keeping product data only inside React files. Now products live in
+MongoDB, our Node/Express server reads them, and the React Home page asks the
+server for that list when the page opens.
+
+--------------------------------------------------------------------------------
+PART 2 — THE BIG PICTURE (THREE LAYERS)
+--------------------------------------------------------------------------------
+
+Think of three rooms in a row:
+
+  ROOM 1 — FRONTEND (what you see)
+           React app in the "src" folder
+           Runs at: http://localhost:5173
+           Command: npm run dev
+
+  ROOM 2 — BACKEND (the middle helper)
+           Express server in the "backend" folder
+           Runs at: http://localhost:5000
+           Command: npm run server
+
+  ROOM 3 — DATABASE (where data is stored)
+           MongoDB database named SZABIST
+           Collection (table-like list) named: products
+           Must be running on your computer (port 27017)
+
+The browser NEVER talks to MongoDB directly. It only talks to Room 2.
+Room 2 talks to Room 3.
+
+--------------------------------------------------------------------------------
+PART 3 — FOLDER MAP (WHAT WE ADDED OR CHANGED)
+--------------------------------------------------------------------------------
+
+my-spa-project/
+│
+├── backend/                    ← NEW FOLDER (all server + database code)
+│   ├── server.js               ← Main API: connects MongoDB, routes /api/products
+│   ├── seedProducts.js         ← Puts 3 sample juices INTO MongoDB (run once)
+│   ├── loadEnv.js              ← Loads settings from .env file safely
+│   ├── package.json            ← Lists server packages (express, mongoose, etc.)
+│   ├── .env.example            ← Template: copy to .env
+│   ├── .env                    ← Your real MONGO_URI and PORT (do not share on GitHub)
+│   ├── products.manual-insert.json  ← Backup: import in Compass if seed fails
+│   └── README.txt              ← Short fix guide if products do not load
+│
+├── src/                        ← FRONTEND (React) — some files CHANGED
+│   ├── pages/
+│   │   ├── Home.jsx            ← CHANGED: fetch products from API, .map() to show cards
+│   │   └── ProductDetail.jsx   ← CHANGED: fetch one product by id from API
+│   ├── data/
+│   │   └── products.js         ← CHANGED: old static list removed (API is now source)
+│   └── Home.css                ← CHANGED: small styles for "loading" / error text
+│
+├── public/
+│   ├── 9.png                   ← NEW (for product images from database img field)
+│   ├── 13.png
+│   └── 22.png
+│
+├── docs/
+│   ├── STUDENT_MERN_INTEGRATION_GUIDE.txt   ← This file
+│   └── STUDENT_MERN_QUICK_REFERENCE.txt     ← Tables + commands cheat sheet
+│
+└── package.json (root)         ← CHANGED: added scripts "server" and "seed"
+
+--------------------------------------------------------------------------------
+PART 4 — WHAT EACH IMPORTANT FILE DOES (PLAIN ENGLISH)
+--------------------------------------------------------------------------------
+
+BACKEND FILES
+-------------
+
+server.js
+  - Starts the Express web server.
+  - Connects to MongoDB using the address in .env (MONGO_URI).
+  - Defines the Product "shape" (Schema): id, name, price, description, ingredients, img.
+  - GET /api/products  → sends ALL products to React as JSON.
+  - GET /api/products/:id  → sends ONE product for the detail page.
+  - Uses cors() so React on port 5173 is allowed to read answers from port 5000.
+
+seedProducts.js
+  - NOT run every time you open the app.
+  - Run when the database is empty: npm run seed
+  - Deletes old rows in "products" collection and inserts 3 juices (Orange, Pineapple, Papaya).
+  - Data is written inside this file in the sampleProducts array — not downloaded from npm.
+
+loadEnv.js
+  - Reads backend/.env so MONGO_URI works even when you run commands from project root.
+
+.env
+  - Hidden settings file.
+  - Example line: MONGO_URI=mongodb://127.0.0.1:27017/SZABIST
+  - Tells Node which database to use.
+
+FRONTEND FILES (CHANGED FOR INTEGRATION)
+----------------------------------------
+
+Home.jsx
+  - useState([])  → products start empty.
+  - useEffect + fetch('http://localhost:5000/api/products')  → load when page opens.
+  - setProducts(data)  → React redraws the page.
+  - products.map(...)  → one juice card per database row (not three copy-pasted blocks).
+
+ProductDetail.jsx
+  - Reads :id from the URL (example /product/2).
+  - fetch('http://localhost:5000/api/products/2')  → gets that one product.
+  - Shows name, price, description, ingredients.
+
+products.js (in src/data)
+  - Old hard-coded PRODUCTS array is gone.
+  - MongoDB + API are now the real source of truth.
+
+--------------------------------------------------------------------------------
+PART 5 — HOW DATA FLOWS (STEP BY STEP)
+--------------------------------------------------------------------------------
+
+When a student opens the Home page:
+
+  Step 1  User opens http://localhost:5173 in the browser.
+
+  Step 2  React Home.jsx runs useEffect once (empty [] dependency).
+
+  Step 3  fetch() sends a request to http://localhost:5000/api/products
+
+  Step 4  Express server.js receives the request.
+
+  Step 5  Mongoose runs Product.find({}) on MongoDB collection "products".
+
+  Step 6  MongoDB returns documents (rows) — must be 3 if you ran seed.
+
+  Step 7  server sends them back as JSON with res.json(...)
+
+  Step 8  React receives JSON, calls setProducts(data).
+
+  Step 9  React re-renders. The .map() loop builds the three juice cards.
+
+If any step is missing, you see the error:
+  "Could not load products. Is the backend running on port 5000?"
+
+--------------------------------------------------------------------------------
+PART 6 — COMMANDS (ORDER MATTERS)
+--------------------------------------------------------------------------------
+
+ONE-TIME SETUP (backend folder, first day of lab)
+  cd backend
+  npm install
+  copy .env.example .env
+
+EVERY LAB SESSION (two terminals + MongoDB running)
+
+  Terminal 1 — database must be ON (MongoDB service / Compass connected)
+
+  Terminal 1 — insert data if collection is empty (only when needed):
+    cd  (project root folder)
+    npm run seed
+
+  Terminal 1 — start API (leave running):
+    npm run server
+
+  Terminal 2 — start React (leave running):
+    npm run dev
+
+WHAT EACH COMMAND MEANS
+-----------------------
+
+  npm install       Downloads helper libraries (express, mongoose, etc.).
+                    Does NOT add juice data to MongoDB.
+
+  npm run seed      Runs seedProducts.js → writes 3 products into SZABIST.products.
+
+  npm run server    Runs backend/server.js → API on port 5000.
+
+  npm run dev       Runs Vite → React on port 5173.
+
+--------------------------------------------------------------------------------
+PART 7 — HOW TO CHECK IT IS WORKING
+--------------------------------------------------------------------------------
+
+  Check A   Browser: http://localhost:5000/api/products
+            → You should see JSON with 3 items.
+
+  Check B   MongoDB Compass → database SZABIST → collection products
+            → 3 documents.
+
+  Check C   Browser: http://localhost:5173 → scroll to products section
+            → Three cards, no red error message.
+
+--------------------------------------------------------------------------------
+PART 8 — COMMON QUESTIONS (CLASS DISCUSSION)
+--------------------------------------------------------------------------------
+
+Q: Why two ports (5173 and 5000)?
+A: Frontend and backend are two separate programs. They must both run.
+
+Q: Why do we need CORS?
+A: The browser blocks requests between different ports unless the server allows it.
+
+Q: Why useEffect with [] ?
+A: So we fetch once when the page loads, not on every tiny UI update.
+
+Q: Where is the product list stored now?
+A: In MongoDB. React only keeps a temporary copy in state after fetch.
+
+Q: Can I edit a product in Compass and see it on the site?
+A: Yes — refresh the page after you change data (and backend must be running).
+
+--------------------------------------------------------------------------------
+PART 9 — FIELD NAMES (MUST MATCH)
+--------------------------------------------------------------------------------
+
+  Database & API          React uses it for
+  ----------------      ------------------
+  id                    /product/:id links, React key
+  name                  Card title
+  price                 Price text
+  description           Detail page paragraph
+  ingredients           Detail page bullet list
+  img                   Image path (e.g. /9.png in public folder)
+
+If names do not match, the UI shows blank or "undefined".
+
+--------------------------------------------------------------------------------
+PART 10 — IF SOMETHING BREAKS
+--------------------------------------------------------------------------------
+
+  Problem                              Fix
+  --------------------------------     ----------------------------------
+  ECONNREFUSED 27017 on seed           Start MongoDB service first
+  Empty [] at /api/products            Run npm run seed
+  "Could not load products"            Run npm run server + npm run dev
+  CORS error in console                server.js must have app.use(cors())
+  Images broken                        Check public/9.png, 13.png, 22.png exist
+
+Manual insert: import backend/products.manual-insert.json in Compass.
+
+================================================================================
+END OF GUIDE — Share this file with students for the MERN integration lab.
+================================================================================

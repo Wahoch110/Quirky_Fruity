@@ -1,0 +1,130 @@
+.navbar {
+  position: relative;
+  top: 0;
+  z-index: 30;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  overflow: hidden;
+  margin: 0;
+  padding: 8px clamp(16px, 5vw, 72px);
+  background-color: var(--cream);
+  background-image:
+    linear-gradient(#ead7b0 1px, transparent 1px),
+    linear-gradient(90deg, #ead7b0 1px, transparent 1px);
+  background-size: 40px 40px;
+  color: #111111;
+  font-family: 'Baloo 2', 'Trebuchet MS', sans-serif;
+}
+
+.nav-links {
+  margin: 0;
+  padding: 0;
+  display: flex;
+  list-style: none;
+  align-items: center;
+  gap: 52px;
+  margin-left: auto;
+  margin-right: 12px;
+}
+
+.logo-link {
+  display: inline-flex;
+  align-items: center;
+  text-decoration: none;
+}
+
+.nav-logo {
+  width: 168px;
+}
+
+.nav-links a {
+  color: #1f1f1f;
+  text-decoration: none;
+  text-transform: none;
+  font-size: 1.18rem;
+  font-weight: 700;
+  letter-spacing: 0;
+  font-family: 'Baloo 2', 'Trebuchet MS', sans-serif;
+  line-height: 1;
+}
+
+.nav-links a.active {
+  color: #d5522f;
+}
+
+.nav-cart-wrap {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 4px 0;
+  margin-left: 8px;
+  flex-shrink: 0;
+}
+
+.nav-cart-link {
+  display: inline-flex;
+  align-items: center;
+}
+
+.nav-clear-cart.nav-clear-cart {
+  min-width: auto;
+}
+
+.hamburger {
+  display: none;
+  flex-direction: column;
+  gap: 4px;
+  cursor: pointer;
+}
+
+.bar {
+  width: 24px;
+  height: 2px;
+  background-color: #111;
+}
+
+@media (max-width: 768px) {
+  .nav-cart-wrap {
+    margin-left: auto;
+    margin-right: 12px;
+    max-width: min(200px, 42vw);
+    justify-content: flex-end;
+  }
+
+  .nav-clear-cart {
+    font-size: 0.75rem !important;
+    padding: 4px 8px !important;
+  }
+
+  .hamburger {
+    display: flex;
+    margin-left: 0;
+  }
+
+  .nav-links {
+    display: none;
+    flex-direction: column;
+    position: absolute;
+    top: 70px;
+    left: 0;
+    right: 0;
+    width: calc(100% - 32px);
+    margin: 0 auto;
+    border-radius: 8px;
+    background-color: rgba(247, 230, 199, 0.98);
+    border: 1px solid #ead9bf;
+    padding: 12px;
+    gap: 12px;
+    margin-right: auto;
+  }
+
+  .nav-links.open {
+    display: flex;
+  }
+
+  .nav-links a {
+    font-size: 1.3rem;
+  }
+}

@@ -1,0 +1,108 @@
+================================================================================
+QUIRKY FRUITY — MERN LAB QUICK REFERENCE (Students)
+================================================================================
+
+TABLE 1 — WHAT THIS PROJECT HAS NOW (after MERN integration)
+--------------------------------------------------------------------------------
+| Layer            | Technology        | Folder / file              | Job |
+|------------------|-------------------|----------------------------|-----|
+| User interface   | React + Vite      | src/pages/Home.jsx         | Shows juices; fetches from API |
+| User interface   | React Router      | src/App.jsx                | Routes: Home, About, /product/:id |
+| User interface   | MUI               | Snackbar, buttons          | Cart toast, UI widgets |
+| API server       | Node + Express    | backend/server.js          | URLs like /api/products |
+| Database         | MongoDB           | Database name: SZABIST    | Stores product documents |
+| Data access      | Mongoose          | Schema in server.js        | Reads/writes "products" collection |
+| Config           | dotenv            | backend/.env               | MONGO_URI, PORT (secrets) |
+| Sample data      | seed script       | backend/seedProducts.js    | Inserts 3 juices into DB |
+
+TABLE 2 — HOW THE THREE PARTS CONNECT (simple picture)
+--------------------------------------------------------------------------------
+
+  [ Browser — React on port 5173 ]
+           |
+           |  fetch('http://localhost:5000/api/products')
+           v
+  [ Node + Express on port 5000 ]  ----mongoose---->  [ MongoDB "SZABIST" ]
+           |                                              collection: products
+           |  res.json([ {...}, {...} ] )
+           v
+  [ Browser updates state → cards appear on screen ]
+
+React does NOT talk to MongoDB directly. It only talks to Express.
+Express is the middle person that talks to MongoDB.
+
+TABLE 3 — COMMANDS YOU MUST KNOW (run in order for lab)
+--------------------------------------------------------------------------------
+| Command              | Where to run it     | Purpose |
+|----------------------|---------------------|---------|
+| (Start MongoDB)      | Windows Services / mongod | Database must be ON before seed or server |
+| npm install          | backend/ folder     | Download express, mongoose, cors, dotenv |
+| copy .env.example .env | backend/ folder   | Create config file with MONGO_URI |
+| npm run seed         | project ROOT        | DELETE old rows + INSERT 3 products into SZABIST |
+| npm run server       | project ROOT        | Start API on http://localhost:5000 |
+| npm run dev          | project ROOT        | Start React on http://localhost:5173 |
+
+You need TWO terminals at the same time:
+  Terminal A: npm run server   (leave running)
+  Terminal B: npm run dev      (leave running)
+
+TABLE 4 — CHECK IF DATA EXISTS (troubleshooting)
+--------------------------------------------------------------------------------
+| Step | What to do | Good result |
+|------|------------|-------------|
+| 1 | Open http://localhost:5000/api/products | JSON array with 3 items |
+| 2 | MongoDB Compass → SZABIST → products | 3 documents |
+| 3 | Home page products section | Three juice cards, no red error |
+
+If step 1 shows []  → run: npm run seed
+If step 1 fails     → run: npm run server  and check MongoDB is running
+If step 3 fails     → both terminals + seed must be done first
+
+TABLE 5 — PRODUCT FIELDS (must match in DB and React)
+--------------------------------------------------------------------------------
+| Field         | Example              | Used for |
+|---------------|----------------------|----------|
+| id            | 1, 2, 3              | Link /product/1, React key |
+| name          | "Orange Juice"       | Card title |
+| price         | "$3.20"              | Price text |
+| description   | long text            | Detail page |
+| ingredients   | ["Oranges", "Mint"]  | Detail page list |
+| img           | "/9.png"             | Image (file in public/ folder) |
+
+================================================================================
+BASICS — EXPLAIN LIKE A CLASS NOTES
+================================================================================
+
+1) How does the database connect to the frontend?
+   - It does NOT connect directly.
+   - Frontend → HTTP request → Express → Mongoose → MongoDB.
+   - Answer comes back the same path as JSON.
+
+2) How does Express + Node connect to MongoDB?
+   - mongoose.connect(MONGO_URI) opens a connection.
+   - MONGO_URI is in backend/.env (example: mongodb://127.0.0.1:27017/SZABIST).
+   - Product.find({}) reads all documents from the "products" collection.
+
+3) How does React get the data?
+   - useEffect runs once when Home page opens.
+   - fetch('http://localhost:5000/api/products') calls the API.
+   - setProducts(data) saves the array in state.
+   - products.map(...) draws one card per database row.
+
+4) What is CORS?
+   - Browser security: port 5173 and port 5000 are "different sites."
+   - cors() on Express allows the React app to read the response.
+
+5) What is npm run seed?
+   - Runs backend/seedProducts.js.
+   - Clears collection and inserts Orange, Pineapple, Papaya juices.
+   - Run again anytime you need fresh sample data.
+
+MANUAL INSERT (if seed command fails) — MongoDB Compass
+   1. Connect to mongodb://127.0.0.1:27017
+   2. Create database SZABIST (if missing)
+   3. Create collection products
+   4. Add Data → Import → pick file: backend/products.manual-insert.json
+      OR insert the 3 documents by hand from that file.
+
+================================================================================
